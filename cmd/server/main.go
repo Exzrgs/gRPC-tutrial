@@ -102,7 +102,10 @@ func main() {
 	}
 
 	s := grpc.NewServer(
-		grpc.StreamInterceptor(myStreamServerInterceptor1),
+		grpc.ChainStreamInterceptor(
+			myStreamServerInterceptor1,
+			myStreamServerInterceptor2,
+		),
 	)
 	hellopb.RegisterGreetingServiceServer(s, NewMyServer())
 
