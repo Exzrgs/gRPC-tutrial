@@ -29,6 +29,7 @@ func main() {
 	address := "localhost:8080"
 	conn, err := grpc.Dial(
 		address,
+		grpc.WithStreamInterceptor(myStreamClientInterceptor1),
 
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 		grpc.WithBlock(),
@@ -125,11 +126,6 @@ func HelloServerStream() {
 	}
 }
 
-/*
-リクエストを複数送る
-受け取る
-表示
-*/
 func HelloClientStream() {
 	count := 4
 
@@ -157,9 +153,6 @@ func HelloClientStream() {
 	return
 }
 
-/*
-何個も送る。おなじ
-*/
 func HelloBiStreams() {
 	stream, err := client.HelloBiStreams(context.Background())
 	if err != nil {
