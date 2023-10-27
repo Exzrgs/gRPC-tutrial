@@ -13,8 +13,11 @@ import (
 
 	hellopb "mygrpc/pkg/grpc"
 
+	"google.golang.org/genproto/googleapis/rpc/errdetails"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/reflection"
+	"google.golang.org/grpc/status"
 )
 
 type myServer struct {
@@ -23,12 +26,14 @@ type myServer struct {
 
 func (*myServer) Hello(ctx context.Context, req *hellopb.HelloRequest) (*hellopb.HelloResponse, error) {
 	stat := status.New(codes.Unknown, "Unknown error occurred")
-	stat, _ stat.WithDetails()
+	stat, _ = stat.WithDetails(&errdetails.DebugInfo{
+		Detail: "Detail reason of error",
+	})
 	err := stat.Err()
 
 	return &hellopb.HelloResponse{
 		Message: fmt.Sprintf("Hello, %s!", req.GetName()),
-	}, nil
+	}, err
 }
 
 func (*myServer) HelloServerStream(req *hellopb.HelloRequest, stream hellopb.GreetingService_HelloServerStreamServer) error {
@@ -96,7 +101,9 @@ func main() {
 		panic(err)
 	}
 
-	s := grpc.NewServer()
+	s := grpc.NewServer(
+	// grpc.UnaryInterceptor(myUnaryServerInterceptor1),
+	)
 	hellopb.RegisterGreetingServiceServer(s, NewMyServer())
 
 	reflection.Register(s)
